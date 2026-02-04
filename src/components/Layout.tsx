@@ -118,15 +118,15 @@ export default function Layout() {
   return (
     <div className="min-h-screen bg-white_smoke-800 text-carbon_black-500">
       <aside
-        className={`fixed left-0 top-0 z-40 h-screen w-[260px] transform border-r border-silver-700 bg-gradient-to-b from-carbon_black-500 to-carbon_black-600 text-white_smoke-900 shadow-lg shadow-silver-400/30 transition-transform duration-200 ${sidebarClass}`}
+        className={`fixed left-0 top-0 z-40 h-screen w-[260px] transform border-r border-silver-700 bg-gradient-to-b from-dark_garnet-500 via-carbon_black-500 to-carbon_black-600 text-white_smoke-900 shadow-lg shadow-dark_garnet-900/30 transition-transform duration-200 ${sidebarClass}`}
       >
-        <div className="flex items-center gap-3 px-5 py-6">
-          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-white_smoke-900 text-strawberry_red-500 text-xl font-black">
+        <div className="flex flex-col items-center gap-2 px-5 py-6 text-center">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white_smoke-900 text-strawberry_red-500 text-2xl font-black">
             📚
           </div>
-          <div>
+          <div className="space-y-1">
             <div className="text-sm font-semibold">DM Grosir</div>
-            <div className="text-[11px] text-white_smoke-700/80">Blasting Promo</div>
+            <div className="text-[11px] text-white_smoke-700/90">Super Admin</div>
           </div>
         </div>
         <nav className="mt-2 space-y-4 px-3 pb-6">
@@ -176,17 +176,7 @@ export default function Layout() {
           ☰
         </button>
         <div className="text-lg font-semibold sm:text-xl">{title}</div>
-        <div className="flex items-center gap-3">
-          <div className="h-11 rounded-full border border-silver-600 bg-white_smoke-900 px-4 py-2 shadow-sm shadow-silver-400/40">
-            <div className="flex items-center gap-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-strawberry_red-500 text-white font-semibold">A</div>
-              <div className="text-sm leading-tight">
-                <div className="font-semibold">SuperAdmin</div>
-              
-              </div>
-            </div>
-          </div>
-        </div>
+        
       </header>
 
       {open && !isDesktop ? (
