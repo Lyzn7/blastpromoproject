@@ -112,3 +112,64 @@
   --color-white-800: #ffffff;
   --color-white-900: #ffffff;
 }
+
+/* Reusable interaction utilities */
+.interactive-card {
+  transition: transform 200ms ease-out, box-shadow 200ms ease-out, border-color 200ms ease-out;
+}
+.interactive-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
+  border-color: var(--color-silver-600);
+}
+@media (prefers-reduced-motion: reduce) {
+  .interactive-card,
+  .interactive-btn,
+  .interactive-icon,
+  .interactive-input,
+  .interactive-nav {
+    transition: none !important;
+    transform: none !important;
+  }
+}
+
+.interactive-btn {
+  transition: transform 180ms ease-out, box-shadow 180ms ease-out, background-color 180ms ease-out, border-color 180ms ease-out, color 180ms ease-out;
+}
+.interactive-btn:not(:disabled):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.06);
+}
+.interactive-btn:not(:disabled):active {
+  transform: translateY(1px);
+  box-shadow: none;
+}
+
+.interactive-input {
+  transition: border-color 160ms ease-out, box-shadow 160ms ease-out, background-color 160ms ease-out;
+}
+.interactive-input:hover {
+  border-color: var(--color-silver-600);
+}
+.interactive-input:focus {
+  border-color: var(--color-strawberry_red-500);
+  box-shadow: 0 0 0 3px rgba(229, 56, 59, 0.2);
+}
+
+.interactive-nav {
+  transition: transform 180ms ease-out, background-color 180ms ease-out, color 180ms ease-out, border-color 180ms ease-out;
+}
+.interactive-nav:hover {
+  transform: translateX(2px);
+}
+
+.interactive-icon {
+  transition: transform 150ms ease-out, background-color 150ms ease-out, color 150ms ease-out, opacity 150ms ease-out;
+}
+.interactive-icon:hover {
+  background-color: var(--color-white_smoke-800);
+  opacity: 0.9;
+}
+.interactive-icon:active {
+  transform: scale(0.98);
+}

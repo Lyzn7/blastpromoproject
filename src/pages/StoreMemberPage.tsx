@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import Modal from '../components/Modal'
 import type { Member, MemberStatus } from '../context/AppContext'
 import { useAppContext } from '../context/AppContext'
@@ -24,54 +24,80 @@ function MemberForm({
   onSubmit: (data: FormState) => void
 }) {
   const [form, setForm] = useState<FormState>(initial)
+  const [touched, setTouched] = useState<{ [K in keyof FormState]: boolean }>({
+    name: false,
+    waNumber: false,
+    birthDate: false,
+    status: false,
+  })
+  const nameRef = useMemo(() => ({ current: null as HTMLInputElement | null }), [])
 
   const handleChange = (field: keyof FormState, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }))
   }
 
+  useEffect(() => {
+    nameRef.current?.focus()
+  }, [])
+
+  const errors = {
+    name: !form.name.trim() ? 'Nama wajib diisi' : '',
+    waNumber: !form.waNumber.trim() ? 'No WA wajib diisi' : '',
+  }
+  const invalid = Boolean(errors.name || errors.waNumber)
+
   return (
     <form
-      className="space-y-4"
+      className="space-y-6"
       onSubmit={(e) => {
         e.preventDefault()
+        if (invalid) return
         onSubmit(form)
       }}
     >
       <div className="grid gap-4 sm:grid-cols-2">
-        <label className="space-y-1 text-sm">
-          <span className="text-silver-600">Nama</span>
+        <label className="space-y-1 text-sm font-medium text-carbon_black-500">
+          <span>Nama</span>
           <input
             required
-            className="w-full rounded-lg border border-carbon_black-400 bg-carbon_black-500 px-3 py-2 text-white_smoke-800"
+            ref={nameRef as unknown as React.RefObject<HTMLInputElement>}
+            className="interactive-input w-full rounded-xl border border-silver-700 bg-white_smoke-900 px-3 py-3 text-carbon_black-500 shadow-inner focus:border-strawberry_red-500 focus:outline-none focus:ring-2 focus:ring-strawberry_red-200"
             value={form.name}
             onChange={(e) => handleChange('name', e.target.value)}
+            onBlur={() => setTouched((p) => ({ ...p, name: true }))}
           />
+          {touched.name && errors.name ? <p className="text-xs text-dark_garnet-600">{errors.name}</p> : null}
         </label>
-        <label className="space-y-1 text-sm">
-          <span className="text-silver-600">No WhatsApp</span>
+        <label className="space-y-1 text-sm font-medium text-carbon_black-500">
+          <span>No WhatsApp</span>
           <input
             required
-            className="w-full rounded-lg border border-carbon_black-400 bg-carbon_black-500 px-3 py-2 text-white_smoke-800"
+            inputMode="numeric"
+            className="interactive-input w-full rounded-xl border border-silver-700 bg-white_smoke-900 px-3 py-3 text-carbon_black-500 shadow-inner focus:border-strawberry_red-500 focus:outline-none focus:ring-2 focus:ring-strawberry_red-200"
             value={form.waNumber}
-            onChange={(e) => handleChange('waNumber', e.target.value)}
+            onChange={(e) => handleChange('waNumber', e.target.value.replace(/\D+/g, ''))}
+            onBlur={() => setTouched((p) => ({ ...p, waNumber: true }))}
+            placeholder="Contoh: 62812xxxx"
           />
+          {touched.waNumber && errors.waNumber ? <p className="text-xs text-dark_garnet-600">{errors.waNumber}</p> : null}
+          <p className="text-xs text-silver-600">Contoh: 62812xxxx</p>
         </label>
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
-        <label className="space-y-1 text-sm">
-          <span className="text-silver-600">Tanggal Lahir</span>
+        <label className="space-y-1 text-sm font-medium text-carbon_black-500">
+          <span>Tanggal Lahir</span>
           <input
             type="date"
             required
-            className="w-full rounded-lg border border-carbon_black-400 bg-carbon_black-500 px-3 py-2 text-white_smoke-800"
+            className="interactive-input w-full rounded-xl border border-silver-700 bg-white_smoke-900 px-3 py-3 text-carbon_black-500 shadow-inner focus:border-strawberry_red-500 focus:outline-none focus:ring-2 focus:ring-strawberry_red-200"
             value={form.birthDate}
             onChange={(e) => handleChange('birthDate', e.target.value)}
           />
         </label>
-        <label className="space-y-1 text-sm">
-          <span className="text-silver-600">Status</span>
+        <label className="space-y-1 text-sm font-medium text-carbon_black-500">
+          <span>Status</span>
           <select
-            className="w-full rounded-lg border border-carbon_black-400 bg-carbon_black-500 px-3 py-2 text-white_smoke-800"
+            className="interactive-input w-full rounded-xl border border-silver-700 bg-white_smoke-900 px-3 py-3 text-carbon_black-500 shadow-inner focus:border-strawberry_red-500 focus:outline-none focus:ring-2 focus:ring-strawberry_red-200"
             value={form.status}
             onChange={(e) => handleChange('status', e.target.value as MemberStatus)}
           >
@@ -83,10 +109,18 @@ function MemberForm({
           </select>
         </label>
       </div>
-      <div className="flex justify-end">
+      <div className="flex flex-col gap-3 border-t border-silver-700 pt-4 sm:flex-row sm:items-center sm:justify-between">
+        <button
+          type="button"
+          className="interactive-btn rounded-lg border border-silver-700 px-4 py-2 text-sm font-semibold text-carbon_black-500 hover:bg-silver-800"
+          onClick={() => onSubmit(initial)}
+        >
+          Batal
+        </button>
         <button
           type="submit"
-          className="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-semibold text-emerald-950 hover:bg-emerald-400"
+          disabled={invalid}
+          className="interactive-btn rounded-lg px-4 py-2 text-sm font-semibold text-white shadow-sm transition bg-emerald-500 hover:bg-emerald-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-200 disabled:cursor-not-allowed disabled:bg-silver-700"
         >
           Simpan
         </button>
@@ -97,16 +131,16 @@ function MemberForm({
 
 function Toolbar({ onAdd, search, setSearch, statusFilter, setStatusFilter }: any) {
   return (
-    <div className="flex flex-col gap-3 rounded-2xl border border-silver-700 bg-white_smoke-900 p-4 shadow-md shadow-silver-400/30 sm:flex-row sm:items-center sm:justify-between">
+    <div className="interactive-card flex flex-col gap-3 rounded-2xl border border-silver-700 bg-white_smoke-900 p-4 shadow-md shadow-silver-400/30 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex flex-1 flex-wrap gap-3">
         <input
-          className="min-w-[200px] flex-1 rounded-lg border border-silver-700 bg-white_smoke-800 px-3 py-2 text-sm text-carbon_black-500"
+        className="interactive-input min-w-[200px] flex-1 rounded-lg border border-silver-700 bg-white_smoke-800 px-3 py-2 text-sm text-carbon_black-500"
           placeholder="Cari nama / no WA"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
         <select
-          className="rounded-lg border border-silver-700 bg-white_smoke-800 px-3 py-2 text-sm text-carbon_black-500"
+          className="interactive-input rounded-lg border border-silver-700 bg-white_smoke-800 px-3 py-2 text-sm text-carbon_black-500"
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
         >
@@ -120,7 +154,7 @@ function Toolbar({ onAdd, search, setSearch, statusFilter, setStatusFilter }: an
       </div>
       <div className="flex gap-2">
         <button
-          className="rounded-lg bg-strawberry_red-500 px-4 py-2 text-sm font-semibold text-white hover:bg-strawberry_red-400"
+          className="interactive-btn rounded-lg bg-strawberry_red-500 px-4 py-2 text-sm font-semibold text-white hover:bg-strawberry_red-400"
           onClick={onAdd}
         >
           Add Member
@@ -136,11 +170,15 @@ function CustomMessageBox({ store }: { store: 'A' | 'B' | 'C' }) {
   const [preview, setPreview] = useState(false)
 
   return (
-    <div className="space-y-3 rounded-2xl border border-silver-700 bg-white_smoke-900 p-4 shadow-md shadow-silver-400/30">
+    <div className="interactive-card space-y-3 rounded-2xl border border-silver-700 bg-white_smoke-900 p-4 shadow-md shadow-silver-400/30">
       <div className="flex items-center justify-between">
         <div>
           <p className="text-xs uppercase tracking-[0.2em] text-silver-600">Custom Text Promo</p>
           <h3 className="text-lg font-semibold text-carbon_black-500">Toko {store}</h3>
+          <p className="text-xs text-silver-600 mt-1">
+            Gunakan placeholder <code className="font-mono text-strawberry_red-500">{'{nama}'}</code> untuk otomatis menyebut nama
+            member pada pesan.
+          </p>
         </div>
         <div className="flex gap-2">
           <button
@@ -184,14 +222,12 @@ function MemberRow({
   onEdit,
   onDelete,
   onSendWA,
-  onTogglePromo,
   onReset,
 }: {
   member: Member
   onEdit: () => void
   onDelete: () => void
   onSendWA: () => void
-  onTogglePromo: () => void
   onReset: () => void
 }) {
   return (
@@ -212,31 +248,25 @@ function MemberRow({
       </div>
       <div className="flex flex-wrap justify-end gap-2">
         <button
-          className="rounded-lg bg-strawberry_red-500 px-3 py-1 text-xs font-semibold text-white hover:bg-strawberry_red-400"
+          className="interactive-btn rounded-lg bg-strawberry_red-500 px-3 py-1 text-xs font-semibold text-white hover:bg-strawberry_red-400"
           onClick={onSendWA}
         >
           WhatsApp
         </button>
         <button
-          className="rounded-lg border border-mahogany_red-600 px-3 py-1 text-xs font-semibold text-mahogany_red-900 hover:bg-mahogany_red-500/15"
-          onClick={onTogglePromo}
-        >
-          Promo Sent
-        </button>
-        <button
-          className="rounded-lg border border-silver-700 px-3 py-1 text-xs font-semibold text-carbon_black-500 hover:bg-silver-800"
+          className="interactive-btn rounded-lg border border-silver-700 px-3 py-1 text-xs font-semibold text-carbon_black-500 hover:bg-silver-800"
           onClick={onReset}
         >
           Reset
         </button>
         <button
-          className="rounded-lg border border-silver-700 px-3 py-1 text-xs font-semibold text-carbon_black-500 hover:bg-silver-800"
+          className="interactive-btn rounded-lg border border-silver-700 px-3 py-1 text-xs font-semibold text-carbon_black-500 hover:bg-silver-800"
           onClick={onEdit}
         >
           Edit
         </button>
         <button
-          className="rounded-lg border border-dark_garnet-600 px-3 py-1 text-xs font-semibold text-dark_garnet-800 hover:bg-dark_garnet-500/15"
+          className="interactive-btn rounded-lg border border-dark_garnet-600 px-3 py-1 text-xs font-semibold text-dark_garnet-800 hover:bg-dark_garnet-500/15"
           onClick={onDelete}
         >
           Delete
@@ -252,8 +282,7 @@ export default function StoreMemberPage({ store }: StoreMemberPageProps) {
     addMember,
     updateMember,
     deleteMember,
-    sendWhatsapp,
-    togglePromo,
+    sendWhatsapp ,
     resetStatuses,
   } = useAppContext()
 
@@ -348,9 +377,7 @@ export default function StoreMemberPage({ store }: StoreMemberPageProps) {
               onSendWA={() => {
                 const url = sendWhatsapp(member.id)
                 if (url) window.open(url, '_blank')
-              }}
-              onTogglePromo={() => togglePromo(member.id)}
-              onReset={() => resetStatuses(member.id)}
+              }}onReset={() => resetStatuses(member.id)}
             />
           ))}
           {filtered.length === 0 ? <p className="px-4 py-6 text-sm text-silver-600">Tidak ada member.</p> : null}

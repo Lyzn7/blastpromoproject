@@ -4,7 +4,7 @@ import { useAppContext } from '../context/AppContext'
 
 function Card({ title, value, subtle, icon }: { title: string; value: string | number; subtle?: string; icon: string }) {
   return (
-    <div className="flex items-start gap-4 rounded-2xl border border-silver-700 bg-white_smoke-900 p-4 shadow-md shadow-silver-400/30">
+    <div className="interactive-card flex items-start gap-4 rounded-2xl border border-silver-700 bg-white_smoke-900 p-4 shadow-md shadow-silver-400/30">
       <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-strawberry_red-500/10 text-2xl">{icon}</div>
       <div>
         <p className="text-xs uppercase tracking-[0.2em] text-silver-600">{title}</p>
@@ -31,7 +31,7 @@ function BirthdayTable() {
   if (upcoming.length === 0) return null
 
   return (
-    <div className="rounded-2xl border border-silver-700 bg-white_smoke-900 p-4 shadow-md shadow-silver-400/30">
+    <div className="interactive-card rounded-2xl border border-silver-700 bg-white_smoke-900 p-4 shadow-md shadow-silver-400/30">
       <div className="flex items-center justify-between">
         <p className="text-sm font-semibold text-carbon_black-500">Ultah Terdekat</p>
         <span className="text-xs text-silver-600">Bulan ini</span>
@@ -61,7 +61,7 @@ function ActiveMemberChart() {
   const data = mode === 'weekly' ? activeWeekly : activeMonthly
 
   return (
-    <div className="rounded-2xl border border-silver-700 bg-white_smoke-900 p-4 shadow-lg shadow-silver-400/30">
+    <div className="interactive-card rounded-2xl border border-silver-700 bg-white_smoke-900 p-4 shadow-lg shadow-silver-400/30">
       <div className="flex items-center justify-between">
         <div>
           <p className="text-xs uppercase tracking-[0.2em] text-silver-600">Member Aktif</p>

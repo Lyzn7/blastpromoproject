@@ -45,7 +45,7 @@ function PendingRow({ member, onApprove, onReject }: { member: Member; onApprove
 
 function AllMembersTable({ members, onDelete }: { members: Member[]; onDelete: (id: string) => void }) {
   return (
-    <div className="mt-6 rounded-2xl border border-silver-700 bg-white_smoke-900 p-4 shadow-md shadow-silver-400/30">
+    <div className="interactive-card mt-6 rounded-2xl border border-silver-700 bg-white_smoke-900 p-4 shadow-md shadow-silver-400/30">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold">Semua Member</h3>
         <span className="text-xs text-silver-600">({members.length})</span>
@@ -82,7 +82,7 @@ export default function MemberPage() {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-2xl border border-silver-700 bg-white_smoke-900 p-5 shadow-md shadow-silver-400/30">
+      <section className="interactive-card rounded-2xl border border-silver-700 bg-white_smoke-900 p-5 shadow-md shadow-silver-400/30">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-xs uppercase tracking-[0.2em] text-silver-600">Persetujuan</p>
@@ -131,3 +131,4 @@ export default function MemberPage() {
     </div>
   )
 }
+
