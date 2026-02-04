@@ -19,16 +19,16 @@ export default function BlastingPromoPage({ store }: { store: Store }) {
     setConfirm(null)
   }
 
-  const sendSelected = () => {
-    return
-  }
+//  const sendSelected = () => {
+//     return
+//   }
 
-  const sendAll = () => {
-    if (storeMembers.length === 0) return
-    openConfirm('Kirim Semua', `Kirim WA ke semua member Toko ${store}? (${storeMembers.length} orang)`, () => {
-      storeMembers.forEach((m) => sendWhatsapp(m.id))
-    })
-  }
+//   const sendAll = () => {
+//     if (storeMembers.length === 0) return
+//     openConfirm('Kirim Semua', `Kirim WA ke semua member Toko ${store}? (${storeMembers.length} orang)`, () => {
+//       storeMembers.forEach((m) => sendWhatsapp(m.id))
+//     })
+//   }
 
   const resetOne = (id: string) => {
     const target = members.find((m) => m.id === id)
