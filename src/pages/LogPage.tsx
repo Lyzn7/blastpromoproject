@@ -1,6 +1,7 @@
 ﻿import { useMemo, useState } from 'react'
 import Modal from '../components/Modal'
 import { useAppContext, type LogItem } from '../context/AppContext'
+import { useAuth } from '../context/AuthContext'
 
 const typeOptions: { label: string; value: LogItem['type'] | 'all' }[] = [
   { label: 'Semua', value: 'all' },
@@ -16,7 +17,7 @@ const typeOptions: { label: string; value: LogItem['type'] | 'all' }[] = [
 ]
 
 const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']
-const storeOptions = [
+const defaultStoreOptions = [
   { label: 'Semua Toko', value: 'all' },
   { label: 'Toko A', value: 'A' },
   { label: 'Toko B', value: 'B' },
@@ -54,16 +55,23 @@ function typeBadge(type: LogItem['type']) {
 
 export default function LogPage() {
   const { logs } = useAppContext()
+  const { allowedStores } = useAuth()
   const [type, setType] = useState<LogItem['type'] | 'all'>('all')
   const [month, setMonth] = useState<string>('all')
-  const [store, setStore] = useState<'all' | 'A' | 'B' | 'C'>('all')
+  const [store, setStore] = useState<'all' | 'A' | 'B' | 'C'>(allowedStores.length === 1 ? allowedStores[0] : 'all')
   const [search, setSearch] = useState('')
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
   const [detail, setDetail] = useState<LogItem | null>(null)
 
+  const storeOptions = useMemo(
+    () => defaultStoreOptions.filter((opt) => opt.value === 'all' || allowedStores.includes(opt.value as 'A' | 'B' | 'C')),
+    [allowedStores],
+  )
+
   const filtered = useMemo(() => {
     return logs.filter((log) => {
+      if (!allowedStores.includes((log.store ?? 'none') as 'A' | 'B' | 'C')) return false
       if (type !== 'all' && log.type !== type) return false
       if (month !== 'all') {
         const m = new Date(log.createdAt).getMonth()
@@ -87,7 +95,7 @@ export default function LogPage() {
   const resetFilter = () => {
     setType('all')
     setMonth('all')
-    setStore('all')
+    setStore(allowedStores.length === 1 ? allowedStores[0] : 'all')
     setSearch('')
     setStartDate('')
     setEndDate('')

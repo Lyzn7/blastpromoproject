@@ -2,6 +2,7 @@ import { useState } from 'react'
 import Modal from '../components/Modal'
 import type { Member } from '../context/AppContext'
 import { useAppContext } from '../context/AppContext'
+import { useAuth } from '../context/AuthContext'
 
 type ConfirmState = { title: string; message: string; action: () => void } | null
 
@@ -90,9 +91,12 @@ function AllMembersTable({ members, onDelete }: { members: Member[]; onDelete: (
 
 export default function MemberPage() {
   const { pendingMembers, members, approvePending, rejectPending, deleteMember } = useAppContext()
+  const { allowedStores } = useAuth()
+  const filteredPending = pendingMembers.filter((m) => allowedStores.includes(m.store))
+  const filteredMembers = members.filter((m) => allowedStores.includes(m.store))
   const [confirmId, setConfirmId] = useState<string | null>(null)
   const [confirm, setConfirm] = useState<ConfirmState>(null)
-  const confirmItem = pendingMembers.find((m) => m.id === confirmId)
+  const confirmItem = filteredPending.find((m) => m.id === confirmId)
 
   const openConfirm = (title: string, message: string, action: () => void) => setConfirm({ title, message, action })
   const runAndClose = () => {
@@ -114,7 +118,7 @@ export default function MemberPage() {
         </div>
         <div className="mt-4 space-y-2">
           <TableHeader />
-          {pendingMembers.map((m) => (
+          {filteredPending.map((m) => (
             <PendingRow
               key={m.id}
               member={m}
@@ -126,12 +130,12 @@ export default function MemberPage() {
               onReject={() => setConfirmId(m.id)}
             />
           ))}
-          {pendingMembers.length === 0 ? <p className="px-4 py-6 text-sm text-silver-600">Tidak ada data pending.</p> : null}
+          {filteredPending.length === 0 ? <p className="px-4 py-6 text-sm text-silver-600">Tidak ada data pending.</p> : null}
         </div>
       </section>
 
       <AllMembersTable
-        members={members}
+        members={filteredMembers}
         onDelete={(id) =>
           openConfirm('Hapus Member', 'Hapus member ini?', () => {
             deleteMember(id)

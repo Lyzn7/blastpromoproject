@@ -1,12 +1,9 @@
-﻿import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 
-type NavItem = { label: string; to?: string; icon: string; children?: NavItem[] }
-
-type NavSection = {
-  title: string
-  items: NavItem[]
-}
+type NavItem = { label: string; to?: string; icon: string; children?: NavItem[]; store?: 'A' | 'B' | 'C' }
+type NavSection = { title: string; items: NavItem[] }
 
 const mainSection: NavSection = {
   title: 'MENU UTAMA',
@@ -22,6 +19,7 @@ const storeSection: NavSection = {
   items: [
     {
       label: 'Toko A',
+      store: 'A',
       icon: '🛍️',
       children: [
         { label: 'Member', to: '/toko-a/member', icon: '👥' },
@@ -31,6 +29,7 @@ const storeSection: NavSection = {
     },
     {
       label: 'Toko B',
+      store: 'B',
       icon: '🛍️',
       children: [
         { label: 'Member', to: '/toko-b/member', icon: '👥' },
@@ -40,6 +39,7 @@ const storeSection: NavSection = {
     },
     {
       label: 'Toko C',
+      store: 'C',
       icon: '🛍️',
       children: [
         { label: 'Member', to: '/toko-c/member', icon: '👥' },
@@ -50,7 +50,7 @@ const storeSection: NavSection = {
   ],
 }
 
-function TitleFromPath(pathname: string) {
+function titleFromPath(pathname: string) {
   if (pathname.startsWith('/toko-a')) return 'Toko A'
   if (pathname.startsWith('/toko-b')) return 'Toko B'
   if (pathname.startsWith('/toko-c')) return 'Toko C'
@@ -60,11 +60,17 @@ function TitleFromPath(pathname: string) {
 
 export default function Layout() {
   const { pathname } = useLocation()
+  const { user, logout, allowedStores } = useAuth()
   const [open, setOpen] = useState(false)
-  const [isDesktop, setIsDesktop] = useState<boolean>(false)
+  const [isDesktop, setIsDesktop] = useState(false)
   const [openSection, setOpenSection] = useState<Record<string, boolean>>({})
 
-  const title = useMemo(() => TitleFromPath(pathname), [pathname])
+  const filteredStoreItems = useMemo(
+    () => storeSection.items.filter((i) => !i.store || allowedStores.includes(i.store)),
+    [allowedStores],
+  )
+
+  const title = useMemo(() => titleFromPath(pathname), [pathname])
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -87,12 +93,12 @@ export default function Layout() {
 
   // auto-open store section containing active route
   useEffect(() => {
-    storeSection.items.forEach((store) => {
+    filteredStoreItems.forEach((store) => {
       if (store.children?.some((c) => pathname.startsWith(c.to ?? ''))) {
         setOpenSection((prev) => ({ ...prev, [store.label]: true }))
       }
     })
-  }, [pathname])
+  }, [pathname, filteredStoreItems])
 
   const sidebarWidth = 260
   const sidebarClass = open ? 'translate-x-0' : '-translate-x-full'
@@ -130,41 +136,48 @@ export default function Layout() {
           </div>
           <div className="space-y-1">
             <div className="text-sm font-semibold">DM Grosir</div>
-            <div className="text-[11px] text-white_smoke-700/90">Super Admin</div>
+            <div className="text-[11px] text-white_smoke-700/90">{user?.name ?? 'User'}</div>
           </div>
         </div>
         <nav className="mt-2 space-y-4 px-3 pb-6">
-          {[mainSection, storeSection].map((section) => (
-            <div key={section.title} className="space-y-2">
-              <p className="px-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-white_smoke-700/70">
-                {section.title}
-              </p>
-              <div className="space-y-1">
-                {section.items.map((item) =>
-                  item.children ? (
-                    <div key={item.label} className="space-y-1">
-                      <button
-                        className="interactive-nav flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-semibold text-white_smoke-900 transition hover:bg-carbon_black-400/60"
-                        type="button"
-                        onClick={() => setOpenSection((prev) => ({ ...prev, [item.label]: !prev[item.label] }))}
-                      >
-                        <span className="flex items-center gap-2">
-                          <span className="text-base">{item.icon}</span>
-                          {item.label}
-                        </span>
-                        <span className={`transition-transform ${openSection[item.label] ? 'rotate-90' : ''}`}>›</span>
-                      </button>
-                      <div className={`${openSection[item.label] ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'} space-y-1 overflow-hidden transition-all duration-200`}>
-                        {item.children.map((child) => renderItem(child, 1))}
+          {[mainSection, { ...storeSection, items: filteredStoreItems }].map((section) => {
+            if (section.title === 'MENU TOKO' && section.items.length === 0) return null
+            return (
+              <div key={section.title} className="space-y-2">
+                <p className="px-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-white_smoke-700/70">
+                  {section.title}
+                </p>
+                <div className="space-y-1">
+                  {section.items.map((item) =>
+                    item.children ? (
+                      <div key={item.label} className="space-y-1">
+                        <button
+                          className="interactive-nav flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-semibold text-white_smoke-900 transition hover:bg-carbon_black-400/60"
+                          type="button"
+                          onClick={() => setOpenSection((prev) => ({ ...prev, [item.label]: !prev[item.label] }))}
+                        >
+                          <span className="flex items-center gap-2">
+                            <span className="text-base">{item.icon}</span>
+                            {item.label}
+                          </span>
+                          <span className={`transition-transform ${openSection[item.label] ? 'rotate-90' : ''}`}>›</span>
+                        </button>
+                        <div
+                          className={`${
+                            openSection[item.label] ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+                          } space-y-1 overflow-hidden transition-all duration-200`}
+                        >
+                          {item.children.map((child) => renderItem(child, 1))}
+                        </div>
                       </div>
-                    </div>
-                  ) : (
-                    renderItem(item)
-                  ),
-                )}
+                    ) : (
+                      renderItem(item)
+                    ),
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            )
+          })}
         </nav>
       </aside>
 
@@ -180,17 +193,25 @@ export default function Layout() {
           ☰
         </button>
         <div className="text-lg font-semibold sm:text-xl">{title}</div>
-        
+        <div className="flex items-center gap-3">
+          <div className="hidden text-right sm:block">
+            <p className="text-sm font-semibold text-carbon_black-500">{user?.name ?? 'User'}</p>
+            <p className="text-[11px] text-silver-600">{user?.role === 'superadmin' ? 'Superadmin' : 'Admin Toko'}</p>
+          </div>
+          <button
+            className="interactive-btn rounded-lg border border-silver-700 px-3 py-2 text-xs font-semibold text-carbon_black-500 hover:bg-silver-800"
+            onClick={logout}
+          >
+            Keluar
+          </button>
+        </div>
       </header>
 
       {open && !isDesktop ? (
         <div className="fixed inset-0 z-20 bg-carbon_black-100/40 transition-opacity" onClick={() => setOpen(false)} />
       ) : null}
 
-      <main
-        className="px-4 pb-10 pt-20 sm:px-6 lg:px-10"
-        style={{ marginLeft: contentMargin }}
-      >
+      <main className="px-4 pb-10 pt-20 sm:px-6 lg:px-10" style={{ marginLeft: contentMargin }}>
         <Outlet />
       </main>
     </div>

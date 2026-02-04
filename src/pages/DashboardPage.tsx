@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { useAppContext } from '../context/AppContext'
+import { useAuth } from '../context/AuthContext'
 
 function Card({ title, value, subtle, icon }: { title: string; value: string | number; subtle?: string; icon: string }) {
   return (
@@ -69,19 +70,38 @@ function ActiveMemberChart() {
 }
 
 export default function DashboardPage() {
-  const {
-    dashboardStats: {
-      countByStore,
-      activeTotal,
-      messagesTotal,
-    },
-    pendingMembers,
-    members,
-  } = useAppContext()
+  const { allowedStores } = useAuth()
+  const { pendingMembers, members } = useAppContext()
 
-  const pendingTop = pendingMembers.slice(0, 5)
+  const filteredMembers = useMemo(() => members.filter((m) => allowedStores.includes(m.store)), [members, allowedStores])
+  const filteredPending = useMemo(
+    () => pendingMembers.filter((m) => allowedStores.includes(m.store)),
+    [pendingMembers, allowedStores],
+  )
+
+  const filteredCountByStore = useMemo(() => {
+    return filteredMembers
+      .filter((m) => m.status === 'active')
+      .reduce(
+        (acc, m) => {
+          acc[m.store] += 1
+          return acc
+        },
+        { A: 0, B: 0, C: 0 } as Record<'A' | 'B' | 'C', number>,
+      )
+  }, [filteredMembers])
+
+  const filteredActiveTotal = Object.values(filteredCountByStore).reduce((a, b) => a + b, 0)
+  const filteredMessagesByStore = {
+    A: filteredCountByStore.A * 10 + 900,
+    B: filteredCountByStore.B * 8 + 700,
+    C: filteredCountByStore.C * 5 + 200,
+  }
+  const filteredMessagesTotal = Object.values(filteredMessagesByStore).reduce((a, b) => a + b, 0)
+
+  const pendingTop = filteredPending.slice(0, 5)
   const fillCount = Math.max(0, 5 - pendingTop.length)
-  const approvedFill = members
+  const approvedFill = filteredMembers
     .filter((m) => m.status === 'active')
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .filter((m) => !pendingTop.some((p) => p.id === m.id))
@@ -92,15 +112,14 @@ export default function DashboardPage() {
     <div className="space-y-8">
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <h1 className="text-3xl font-semibold text-carbon_black-500">Dashboard</h1>
-        
       </div>
 
       <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <Card title="Member Aktif Total" value={activeTotal} subtle="Semua toko" icon="👥" />
-        <Card title="Member Toko A" value={countByStore.A} icon="🏪" />
-        <Card title="Member Toko B" value={countByStore.B} icon="🏪" />
-        <Card title="Member Toko C" value={countByStore.C} icon="🏪" />
-        <Card title="Pesan Terkirim Total" value={messagesTotal} icon="✉️" />
+        <Card title="Member Aktif Total" value={filteredActiveTotal} subtle="Sesuai akses" icon="👥" />
+        {allowedStores.includes('A') ? <Card title="Member Toko A" value={filteredCountByStore.A} icon="🏪" /> : null}
+        {allowedStores.includes('B') ? <Card title="Member Toko B" value={filteredCountByStore.B} icon="🏪" /> : null}
+        {allowedStores.includes('C') ? <Card title="Member Toko C" value={filteredCountByStore.C} icon="🏪" /> : null}
+        <Card title="Pesan Terkirim Total" value={filteredMessagesTotal} icon="✉️" />
       </section>
 
       <section className="grid gap-6 lg:grid-cols-[2fr_1fr]">
@@ -127,12 +146,12 @@ export default function DashboardPage() {
                   </div>
                   <span
                     className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                      pendingMembers.some((p) => p.id === m.id)
+                      filteredPending.some((p) => p.id === m.id)
                         ? 'bg-amber-500/15 text-amber-700'
                         : 'bg-emerald-500/15 text-emerald-600'
                     }`}
                   >
-                    {pendingMembers.some((p) => p.id === m.id) ? 'Pending' : 'Disetujui'}
+                    {filteredPending.some((p) => p.id === m.id) ? 'Pending' : 'Disetujui'}
                   </span>
                 </div>
               ))}
