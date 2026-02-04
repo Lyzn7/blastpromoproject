@@ -181,8 +181,8 @@ export default function Layout() {
             <div className="flex items-center gap-3">
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-strawberry_red-500 text-white font-semibold">A</div>
               <div className="text-sm leading-tight">
-                <div className="font-semibold">Admin</div>
-                <div className="text-silver-600">Perpustakaan</div>
+                <div className="font-semibold">SuperAdmin</div>
+              
               </div>
             </div>
           </div>
