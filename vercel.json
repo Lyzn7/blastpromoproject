@@ -1,0 +1,9 @@
+{
+  "//": "SPA fallback so React Router routes work on refresh in Vercel",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
