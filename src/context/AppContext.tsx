@@ -16,6 +16,26 @@ export type Member = {
   status: MemberStatus
 }
 
+export type LogItem = {
+  id: string
+  type:
+    | 'member_add'
+    | 'member_delete'
+    | 'member_edit'
+    | 'approval'
+    | 'whatsapp_send'
+    | 'promo_mark'
+    | 'reset'
+    | 'birthday'
+    | 'other'
+  title: string
+  description: string
+  store?: Store | null
+  actor: string
+  createdAt: string
+  meta?: Record<string, unknown>
+}
+
 type DashboardStats = {
   countByStore: Record<Store, number>
   activeTotal: number
@@ -31,6 +51,7 @@ type AppContextValue = {
   members: Member[]
   pendingMembers: Member[]
   customMessageByStore: Record<Store, string>
+  logs: LogItem[]
   dashboardStats: DashboardStats
   approvePending: (id: string) => void
   rejectPending: (id: string) => void
@@ -38,9 +59,9 @@ type AppContextValue = {
   updateMember: (id: string, data: Partial<Member>) => void
   deleteMember: (id: string) => void
   resetStatuses: (id: string) => void
-  togglePromo: (id: string) => void
   sendWhatsapp: (id: string) => string | undefined
   setCustomMessage: (store: Store, text: string) => void
+  addLog: (log: Omit<LogItem, 'id' | 'actor' | 'createdAt'> & { createdAt?: string; actor?: string }) => void
 }
 
 const AppContext = createContext<AppContextValue | undefined>(undefined)
@@ -106,6 +127,102 @@ const initialMembers: Member[] = [
     createdAt: '2026-01-02',
     status: 'active',
   },
+  {
+    id: 'm-6',
+    store: 'A',
+    memberNo: 'AUTO-0006',
+    name: 'Yoga Pratama',
+    waNumber: '628123400006',
+    birthDate: '1993-06-12',
+    whatsappSent: false,
+    promoSent: false,
+    createdAt: '2026-01-25',
+    status: 'active',
+  },
+  {
+    id: 'm-7',
+    store: 'A',
+    memberNo: 'AUTO-0007',
+    name: 'Lestari Handayani',
+    waNumber: '628123400007',
+    birthDate: '1988-03-03',
+    whatsappSent: true,
+    promoSent: true,
+    createdAt: '2026-01-24',
+    status: 'active',
+  },
+  {
+    id: 'm-8',
+    store: 'A',
+    memberNo: 'AUTO-0008',
+    name: 'Rama Dwi Putra',
+    waNumber: '628123400008',
+    birthDate: '1996-09-18',
+    whatsappSent: false,
+    promoSent: true,
+    createdAt: '2026-01-23',
+    status: 'active',
+  },
+  {
+    id: 'm-9',
+    store: 'A',
+    memberNo: 'AUTO-0009',
+    name: 'Mega Puspita',
+    waNumber: '628123400009',
+    birthDate: '1994-12-01',
+    whatsappSent: false,
+    promoSent: false,
+    createdAt: '2026-01-22',
+    status: 'active',
+  },
+  {
+    id: 'm-10',
+    store: 'A',
+    memberNo: 'AUTO-0010',
+    name: 'Ardiansyah Putu',
+    waNumber: '628123400010',
+    birthDate: '1991-05-27',
+    whatsappSent: true,
+    promoSent: false,
+    createdAt: '2026-01-21',
+    status: 'active',
+  },
+  {
+    id: 'm-11',
+    store: 'A',
+    memberNo: 'AUTO-0011',
+    name: 'Nia Kurniasih',
+    waNumber: '628123400011',
+    birthDate: '1997-08-08',
+    whatsappSent: false,
+    promoSent: false,
+    createdAt: '2026-01-19',
+    status: 'active',
+  },
+  {
+    id: 'm-12',
+    store: 'A',
+    memberNo: 'AUTO-0012',
+    name: 'Bagus Hartanto',
+    waNumber: '628123400012',
+    birthDate: '1989-04-14',
+    whatsappSent: true,
+    promoSent: true,
+    createdAt: '2026-01-17',
+    status: 'active',
+  },
+  {
+    id: 'm-13',
+    store: 'A',
+    memberNo: 'AUTO-0013',
+    name: 'Citra Melani',
+    waNumber: '628123400013',
+    birthDate: '1995-10-30',
+    whatsappSent: false,
+    promoSent: true,
+    createdAt: '2026-01-15',
+    status: 'active',
+  },
 ]
 
 const initialPending: Member[] = [
@@ -141,6 +258,90 @@ const initialMessage: Record<Store, string> = {
   C: 'Salam dari Toko C, dapatkan penawaran terbaik minggu ini.',
 }
 
+const initialLogs: LogItem[] = [
+  {
+    id: 'log-1',
+    type: 'member_add',
+    title: 'Tambah Member',
+    description: 'Menambahkan Dewi Lestari (AUTO-0001) ke Toko A',
+    store: 'A',
+    actor: 'SuperAdmin',
+    createdAt: '2026-02-03T09:15:00',
+  },
+  {
+    id: 'log-2',
+    type: 'approval',
+    title: 'Approve Member Pending',
+    description: 'Menyetujui Rina Putri (AUTO-0101) Toko A',
+    store: 'A',
+    actor: 'SuperAdmin',
+    createdAt: '2026-02-04T08:00:00',
+  },
+  {
+    id: 'log-3',
+    type: 'whatsapp_send',
+    title: 'Kirim WhatsApp Promo',
+    description: 'Promo dikirim ke Budi Santoso (628123400002) - Toko B',
+    store: 'B',
+    actor: 'SuperAdmin',
+    createdAt: '2026-02-02T12:45:00',
+  },
+  {
+    id: 'log-4',
+    type: 'reset',
+    title: 'Reset Status Kirim',
+    description: 'Reset status WA & promo untuk Agus Firmansyah - Toko A',
+    store: 'A',
+    actor: 'SuperAdmin',
+    createdAt: '2026-02-01T10:10:00',
+  },
+  {
+    id: 'log-5',
+    type: 'promo_mark',
+    title: 'Tandai Promo Terkirim',
+    description: 'Promo ditandai terkirim ke Siti Rahma - Toko C',
+    store: 'C',
+    actor: 'SuperAdmin',
+    createdAt: '2026-01-29T16:05:00',
+  },
+  {
+    id: 'log-6',
+    type: 'member_edit',
+    title: 'Edit Data Member',
+    description: 'Edit data Maria Widya (AUTO-0005) - Toko B',
+    store: 'B',
+    actor: 'SuperAdmin',
+    createdAt: '2026-01-28T11:00:00',
+  },
+  {
+    id: 'log-7',
+    type: 'member_delete',
+    title: 'Hapus Member',
+    description: 'Hapus member non-aktif AUTO-0099 - Toko C',
+    store: 'C',
+    actor: 'SuperAdmin',
+    createdAt: '2025-12-20T09:30:00',
+  },
+  {
+    id: 'log-8',
+    type: 'birthday',
+    title: 'Reminder Ultah',
+    description: 'Kirim ucapan ultah ke Dewi Lestari - Toko A',
+    store: 'A',
+    actor: 'System',
+    createdAt: '2026-02-10T07:00:00',
+  },
+  {
+    id: 'log-9',
+    type: 'approval',
+    title: 'Reject Member Pending',
+    description: 'Menolak pengajuan Galih Pratama - Toko C',
+    store: 'C',
+    actor: 'SuperAdmin',
+    createdAt: '2026-02-03T09:00:00',
+  },
+]
+
 function nextMemberNo(existing: Member[]) {
   const max = existing.reduce((acc, m) => {
     const num = parseInt(m.memberNo.replace(/\D+/g, ''), 10)
@@ -158,6 +359,19 @@ function AppProvider({ children }: { children: ReactNode }) {
   const [members, setMembers] = useState<Member[]>(initialMembers)
   const [pendingMembers, setPendingMembers] = useState<Member[]>(initialPending)
   const [customMessageByStore, setCustomMessageByStore] = useState<Record<Store, string>>(initialMessage)
+  const [logs, setLogs] = useState<LogItem[]>(initialLogs)
+
+  const addLog: AppContextValue['addLog'] = (log) => {
+    setLogs((prev) => [
+      {
+        id: crypto.randomUUID(),
+        actor: log.actor ?? 'SuperAdmin',
+        createdAt: log.createdAt ?? new Date().toISOString(),
+        ...log,
+      },
+      ...prev,
+    ])
+  }
 
   const approvePending = (id: string) => {
     setPendingMembers((prev) => {
@@ -167,18 +381,34 @@ function AppProvider({ children }: { children: ReactNode }) {
         ...current,
         { ...item, status: 'active', id: crypto.randomUUID(), memberNo: nextMemberNo(current) },
       ])
+      addLog({
+        type: 'approval',
+        title: 'Approve Member Pending',
+        description: `Menyetujui ${item.name} (${item.memberNo}) - Toko ${item.store}`,
+        store: item.store,
+      })
       return prev.filter((m) => m.id !== id)
     })
   }
 
   const rejectPending = (id: string) => {
-    setPendingMembers((prev) => prev.filter((m) => m.id !== id))
+    setPendingMembers((prev) => {
+      const item = prev.find((m) => m.id === id)
+      if (item) {
+        addLog({
+          type: 'approval',
+          title: 'Reject Member Pending',
+          description: `Menolak ${item.name} (${item.memberNo}) - Toko ${item.store}`,
+          store: item.store,
+        })
+      }
+    return prev.filter((m) => m.id !== id)
+    })
   }
 
   const addMember: AppContextValue['addMember'] = (member) => {
-    setMembers((prev) => [
-      ...prev,
-      {
+    setMembers((prev) => {
+      const payload: Member = {
         ...member,
         id: crypto.randomUUID(),
         memberNo: nextMemberNo(prev),
@@ -186,8 +416,15 @@ function AppProvider({ children }: { children: ReactNode }) {
         whatsappSent: false,
         promoSent: false,
         createdAt: new Date().toISOString().slice(0, 10),
-      },
-    ])
+      }
+      addLog({
+        type: 'member_add',
+        title: 'Tambah Member',
+        description: `Menambahkan ${member.name} ke Toko ${member.store}`,
+        store: member.store,
+      })
+      return [...prev, payload]
+    })
   }
 
   const updateMember = (id: string, data: Partial<Member>) => {
@@ -195,23 +432,54 @@ function AppProvider({ children }: { children: ReactNode }) {
   }
 
   const deleteMember = (id: string) => {
-    setMembers((prev) => prev.filter((m) => m.id !== id))
+    setMembers((prev) => {
+      const target = prev.find((m) => m.id === id)
+      if (target) {
+        addLog({
+          type: 'member_delete',
+          title: 'Hapus Member',
+          description: `Hapus ${target.name} (${target.memberNo})`,
+          store: target.store,
+        })
+      }
+      return prev.filter((m) => m.id !== id)
+    })
   }
 
   const resetStatuses = (id: string) => {
     updateMember(id, { whatsappSent: false, promoSent: false })
-  }
-
-  const togglePromo = (id: string) => {
-    setMembers((prev) => prev.map((m) => (m.id === id ? { ...m, promoSent: !m.promoSent } : m)))
+    const target = members.find((m) => m.id === id)
+    addLog({
+      type: 'reset',
+      title: 'Reset Status',
+      description: `Reset status ${target?.name ?? id}`,
+      store: target?.store,
+    })
   }
 
   const sendWhatsapp = (id: string) => {
     const member = members.find((m) => m.id === id)
     if (!member) return undefined
-    const text = customMessageByStore[member.store] || ''
-    const url = `https://wa.me/${member.waNumber}?text=${encodeURIComponent(text)}`
+
+    const template = customMessageByStore[member.store] || ''
+    const personalized = template.includes('{nama}')
+      ? template.replace('{nama}', member.name)
+      : `${member.name}, ${template}`.trim()
+
+    const url = `https://wa.me/${member.waNumber}?text=${encodeURIComponent(personalized)}`
+
     updateMember(id, { whatsappSent: true })
+    addLog({
+      type: 'whatsapp_send',
+      title: 'Kirim WhatsApp',
+      description: `WA dikirim ke ${member.name} (${member.waNumber}) - Toko ${member.store}`,
+      store: member.store,
+    })
+
+    if (typeof window !== 'undefined') {
+      window.open(url, '_blank')
+    }
+
     return url
   }
 
@@ -273,6 +541,7 @@ function AppProvider({ children }: { children: ReactNode }) {
     members,
     pendingMembers,
     customMessageByStore,
+    logs,
     dashboardStats,
     approvePending,
     rejectPending,
@@ -280,9 +549,9 @@ function AppProvider({ children }: { children: ReactNode }) {
     updateMember,
     deleteMember,
     resetStatuses,
-    togglePromo,
     sendWhatsapp,
     setCustomMessage,
+    addLog,
   }
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>
@@ -295,3 +564,5 @@ export function useAppContext() {
 }
 
 export default AppProvider
+
+

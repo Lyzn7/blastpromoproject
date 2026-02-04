@@ -15,44 +15,6 @@ function Card({ title, value, subtle, icon }: { title: string; value: string | n
   )
 }
 
-function BirthdayTable() {
-  const { members } = useAppContext()
-  const today = new Date()
-  const month = today.getMonth()
-  const upcoming = members
-    .filter((m) => new Date(m.birthDate).getMonth() === month)
-    .slice(0, 5)
-    .map((m) => ({
-      name: m.name,
-      wa: m.waNumber,
-      date: new Date(m.birthDate).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' }),
-    }))
-
-  if (upcoming.length === 0) return null
-
-  return (
-    <div className="interactive-card rounded-2xl border border-silver-700 bg-white_smoke-900 p-4 shadow-md shadow-silver-400/30">
-      <div className="flex items-center justify-between">
-        <p className="text-sm font-semibold text-carbon_black-500">Ultah Terdekat</p>
-        <span className="text-xs text-silver-600">Bulan ini</span>
-      </div>
-      <div className="mt-3 space-y-2 text-sm text-carbon_black-500">
-        {upcoming.map((item) => (
-          <div key={item.name} className="flex items-center justify-between rounded-lg bg-white_smoke-800 px-3 py-2">
-            <div>
-              <p className="font-semibold">{item.name}</p>
-              <p className="text-xs text-silver-600">WA: {item.wa}</p>
-            </div>
-            <span className="rounded-full bg-strawberry_red-500/15 px-3 py-1 text-xs font-semibold text-strawberry_red-500">
-              {item.date}
-            </span>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-
 function ActiveMemberChart() {
   const {
     dashboardStats: { activeWeekly, activeMonthly },
@@ -112,17 +74,25 @@ export default function DashboardPage() {
       countByStore,
       activeTotal,
       messagesTotal,
-      birthdayThisMonthTotal,
     },
+    pendingMembers,
+    members,
   } = useAppContext()
+
+  const pendingTop = pendingMembers.slice(0, 5)
+  const fillCount = Math.max(0, 5 - pendingTop.length)
+  const approvedFill = members
+    .filter((m) => m.status === 'active')
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .filter((m) => !pendingTop.some((p) => p.id === m.id))
+    .slice(0, fillCount)
+  const highlightList = [...pendingTop, ...approvedFill]
 
   return (
     <div className="space-y-8">
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <h1 className="text-3xl font-semibold text-carbon_black-500">Dashboard</h1>
-        <div className="flex items-center gap-3 rounded-full border border-silver-700 bg-white_smoke-900 px-4 py-2 shadow-sm shadow-silver-400/30">
-          <span className="text-sm text-silver-700">Admin View</span>
-        </div>
+        
       </div>
 
       <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -131,12 +101,44 @@ export default function DashboardPage() {
         <Card title="Member Toko B" value={countByStore.B} icon="🏪" />
         <Card title="Member Toko C" value={countByStore.C} icon="🏪" />
         <Card title="Pesan Terkirim Total" value={messagesTotal} icon="✉️" />
-        <Card title="Ultah Bulan Ini" value={birthdayThisMonthTotal} icon="🎂" />
       </section>
 
       <section className="grid gap-6 lg:grid-cols-[2fr_1fr]">
         <ActiveMemberChart />
-        <BirthdayTable />
+        <div className="interactive-card rounded-2xl border border-silver-700 bg-white_smoke-900 p-4 shadow-md shadow-silver-400/30">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-semibold text-carbon_black-500">Member Terbaru</p>
+            <span className="text-xs text-silver-600">{highlightList.length} entri</span>
+          </div>
+          {highlightList.length === 0 ? (
+            <p className="mt-4 text-sm text-silver-600">Belum ada data.</p>
+          ) : (
+            <div className="mt-3 space-y-2 text-sm text-carbon_black-500">
+              {highlightList.map((m) => (
+                <div
+                  key={m.id}
+                  className="flex items-center justify-between rounded-lg bg-white_smoke-800 px-3 py-2"
+                >
+                  <div>
+                    <p className="font-semibold">{m.name}</p>
+                    <p className="text-xs text-silver-600">
+                      {m.memberNo} · WA: {m.waNumber} · Toko {m.store}
+                    </p>
+                  </div>
+                  <span
+                    className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                      pendingMembers.some((p) => p.id === m.id)
+                        ? 'bg-amber-500/15 text-amber-700'
+                        : 'bg-emerald-500/15 text-emerald-600'
+                    }`}
+                  >
+                    {pendingMembers.some((p) => p.id === m.id) ? 'Pending' : 'Disetujui'}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </section>
     </div>
   )

@@ -8,6 +8,7 @@ type StoreMemberPageProps = {
 }
 
 const statusOptions: MemberStatus[] = ['active', 'inactive', 'pending']
+type ConfirmState = { title: string; message: string; action: () => void } | null
 
 type FormState = {
   name: string
@@ -164,109 +165,54 @@ function Toolbar({ onAdd, search, setSearch, statusFilter, setStatusFilter }: an
   )
 }
 
-function CustomMessageBox({ store }: { store: 'A' | 'B' | 'C' }) {
-  const { customMessageByStore, setCustomMessage } = useAppContext()
-  const [text, setText] = useState(customMessageByStore[store])
-  const [preview, setPreview] = useState(false)
-
+function MemberTableHeader() {
   return (
-    <div className="interactive-card space-y-3 rounded-2xl border border-silver-700 bg-white_smoke-900 p-4 shadow-md shadow-silver-400/30">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-xs uppercase tracking-[0.2em] text-silver-600">Custom Text Promo</p>
-          <h3 className="text-lg font-semibold text-carbon_black-500">Toko {store}</h3>
-          <p className="text-xs text-silver-600 mt-1">
-            Gunakan placeholder <code className="font-mono text-strawberry_red-500">{'{nama}'}</code> untuk otomatis menyebut nama
-            member pada pesan.
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <button
-            className="rounded-lg border border-silver-700 px-3 py-1.5 text-xs font-semibold text-carbon_black-500 hover:border-strawberry_red-500"
-            onClick={() => setPreview(true)}
-          >
-            Preview
-          </button>
-          <button
-            className="rounded-lg bg-strawberry_red-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-strawberry_red-400"
-            onClick={() => setCustomMessage(store, text)}
-          >
-            Set Default
-          </button>
-        </div>
-      </div>
-      <textarea
-        className="w-full rounded-lg border border-silver-700 bg-white_smoke-800 px-3 py-3 text-sm text-carbon_black-500"
-        rows={4}
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-      />
-      <Modal
-        open={preview}
-        onClose={() => setPreview(false)}
-        title="Preview Pesan"
-        footer={
-          <button className="rounded-lg bg-strawberry_red-500 px-4 py-2 text-sm font-semibold text-white" onClick={() => setPreview(false)}>
-            Tutup
-          </button>
-        }
-      >
-        <p className="whitespace-pre-line text-sm text-carbon_black-500">{text}</p>
-      </Modal>
+    <div className="grid grid-cols-[120px_1.3fr_1.1fr_1fr_0.9fr_auto] gap-3 rounded-lg bg-white_smoke-800 px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-carbon_black-500">
+      <span>ID</span>
+      <span>Nama</span>
+      <span>No WA</span>
+      <span>Tgl Lahir</span>
+      <span>Status</span>
+      <span className="text-right">Action</span>
     </div>
   )
 }
 
-function MemberRow({
+function MemberTableRow({
   member,
   onEdit,
   onDelete,
-  onSendWA,
   onReset,
 }: {
   member: Member
   onEdit: () => void
   onDelete: () => void
-  onSendWA: () => void
   onReset: () => void
 }) {
   return (
-    <div className="grid grid-cols-[0.7fr_1fr_1fr_1fr_auto] items-center gap-3 rounded-lg border border-silver-700 bg-white_smoke-900 px-4 py-3 text-sm text-carbon_black-500">
-      <div>
-        <p className="font-semibold text-white_smoke-800">{member.name}</p>
-        <p className="text-xs text-silver-600">{member.memberNo}</p>
+    <div className="grid grid-cols-[120px_1.3fr_1.1fr_1fr_0.9fr_auto] items-center gap-3 px-4 py-3 text-sm text-carbon_black-500 transition hover:bg-white_smoke-800 bg-white_smoke-900">
+      <span className="truncate text-xs font-semibold text-silver-600">{member.memberNo}</span>
+      <div className="min-w-0">
+        <div className="truncate font-semibold">{member.name}</div>
       </div>
-      <span>{member.waNumber}</span>
+      <span className="truncate">{member.waNumber}</span>
       <span>{member.birthDate}</span>
-      <div className="flex flex-col gap-1 text-xs">
-        <span className={`inline-flex w-fit rounded-full px-2 py-1 ${member.whatsappSent ? 'bg-strawberry_red-500/15 text-strawberry_red-500' : 'bg-silver-800 text-silver-700'}`}>
-          WA: {member.whatsappSent ? 'sudah' : 'belum'}
-        </span>
-        <span className={`inline-flex w-fit rounded-full px-2 py-1 ${member.promoSent ? 'bg-strawberry_red-500/15 text-strawberry_red-500' : 'bg-silver-800 text-silver-700'}`}>
-          Promo: {member.promoSent ? 'dikirim' : 'belum'}
-        </span>
-      </div>
-      <div className="flex flex-wrap justify-end gap-2">
+      <span className={member.status === 'active' ? 'text-emerald-600 font-semibold' : 'text-silver-600'}>{member.status}</span>
+      <div className="flex flex-wrap items-center justify-end gap-2">
         <button
-          className="interactive-btn rounded-lg bg-strawberry_red-500 px-3 py-1 text-xs font-semibold text-white hover:bg-strawberry_red-400"
-          onClick={onSendWA}
-        >
-          WhatsApp
-        </button>
-        <button
-          className="interactive-btn rounded-lg border border-silver-700 px-3 py-1 text-xs font-semibold text-carbon_black-500 hover:bg-silver-800"
+          className="interactive-btn h-8 rounded-lg border border-silver-700 px-3 text-xs font-semibold text-carbon_black-500 hover:bg-silver-800"
           onClick={onReset}
         >
           Reset
         </button>
         <button
-          className="interactive-btn rounded-lg border border-silver-700 px-3 py-1 text-xs font-semibold text-carbon_black-500 hover:bg-silver-800"
+          className="interactive-btn h-8 rounded-lg border border-silver-700 px-3 text-xs font-semibold text-carbon_black-500 hover:bg-silver-800"
           onClick={onEdit}
         >
           Edit
         </button>
         <button
-          className="interactive-btn rounded-lg border border-dark_garnet-600 px-3 py-1 text-xs font-semibold text-dark_garnet-800 hover:bg-dark_garnet-500/15"
+          className="interactive-btn h-8 rounded-lg border border-dark_garnet-600 px-3 text-xs font-semibold text-dark_garnet-800 hover:bg-dark_garnet-500/15"
           onClick={onDelete}
         >
           Delete
@@ -282,7 +228,6 @@ export default function StoreMemberPage({ store }: StoreMemberPageProps) {
     addMember,
     updateMember,
     deleteMember,
-    sendWhatsapp ,
     resetStatuses,
   } = useAppContext()
 
@@ -292,6 +237,7 @@ export default function StoreMemberPage({ store }: StoreMemberPageProps) {
   const [modalMode, setModalMode] = useState<'add' | 'edit' | null>(null)
   const [activeId, setActiveId] = useState<string | null>(null)
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null)
+  const [confirm, setConfirm] = useState<ConfirmState>(null)
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase()
@@ -328,20 +274,30 @@ export default function StoreMemberPage({ store }: StoreMemberPageProps) {
     setModalMode('edit')
   }
 
+  const openConfirm = (title: string, message: string, action: () => void) => setConfirm({ title, message, action })
+  const runAndClose = () => {
+    if (confirm?.action) confirm.action()
+    setConfirm(null)
+  }
+
   const handleSubmit = (data: FormState) => {
     if (modalMode === 'add') {
-      addMember({ ...data, store })
+      openConfirm('Tambah Member', 'Simpan member baru?', () => {
+        addMember({ ...data, store })
+        setModalMode(null)
+        setActiveId(null)
+      })
     } else if (modalMode === 'edit' && activeId) {
-      updateMember(activeId, data)
+      openConfirm('Simpan Perubahan', 'Simpan perubahan member?', () => {
+        updateMember(activeId, data)
+        setModalMode(null)
+        setActiveId(null)
+      })
     }
-    setModalMode(null)
-    setActiveId(null)
   }
 
   return (
     <div className="space-y-6">
-      <CustomMessageBox store={store} />
-
       <Toolbar
         onAdd={openAdd}
         search={search}
@@ -350,37 +306,34 @@ export default function StoreMemberPage({ store }: StoreMemberPageProps) {
         setStatusFilter={setStatusFilter}
       />
 
-      <div className="rounded-2xl border border-silver-700 bg-white_smoke-900 p-4 shadow-md shadow-silver-400/30">
+      <div className="interactive-card rounded-2xl border border-silver-700 bg-white_smoke-900 p-6 shadow-md shadow-silver-400/30">
         <div className="flex items-center justify-between">
           <div>
-          <p className="text-xs uppercase tracking-[0.2em] text-silver-600">Member</p>
-          <h3 className="text-lg font-semibold text-carbon_black-500">Toko {store}</h3>
+            <p className="text-xs uppercase tracking-[0.2em] text-silver-600">Member</p>
+            <h3 className="text-lg font-semibold text-carbon_black-500">Toko {store}</h3>
           </div>
           <span className="rounded-full bg-strawberry_red-500/15 px-3 py-1 text-xs font-semibold text-strawberry_red-500">
             {filtered.length} member
           </span>
         </div>
-        <div className="mt-4 space-y-2">
-          <div className="grid grid-cols-[0.7fr_1fr_1fr_1fr_auto] gap-3 rounded-lg bg-white_smoke-800 px-4 py-3 text-xs font-semibold uppercase tracking-[0.1em] text-silver-700">
-            <span>Nama</span>
-            <span>No WA</span>
-            <span>Tgl Lahir</span>
-            <span>Status</span>
-            <span className="text-right">Action</span>
+        <div className="mt-4 overflow-x-auto ">
+          <div className="min-w-[1100px] space-y-3 text-sm text-carbon_black-500">
+            <MemberTableHeader />
+            <div className="divide-y divide-red-700 overflow-hidden rounded-xl border border-silver-700 bg-white_smoke-900">
+              {filtered.map((member) => (
+                <MemberTableRow
+                  key={member.id}
+                  member={member}
+                  onEdit={() => openConfirm('Edit Member', 'Edit data member ini?', () => openEdit(member.id))}
+                  onDelete={() => setConfirmDelete(member.id)}
+                  onReset={() =>
+                    openConfirm('Reset Status', 'Reset status WA & promo member ini?', () => resetStatuses(member.id))
+                  }
+                />
+              ))}
+            </div>
+            {filtered.length === 0 ? <p className="px-4 py-6 text-sm text-silver-600">Tidak ada member.</p> : null}
           </div>
-          {filtered.map((member) => (
-            <MemberRow
-              key={member.id}
-              member={member}
-              onEdit={() => openEdit(member.id)}
-              onDelete={() => setConfirmDelete(member.id)}
-              onSendWA={() => {
-                const url = sendWhatsapp(member.id)
-                if (url) window.open(url, '_blank')
-              }}onReset={() => resetStatuses(member.id)}
-            />
-          ))}
-          {filtered.length === 0 ? <p className="px-4 py-6 text-sm text-silver-600">Tidak ada member.</p> : null}
         </div>
       </div>
 
@@ -414,6 +367,30 @@ export default function StoreMemberPage({ store }: StoreMemberPageProps) {
         }
       >
         <p className="text-sm text-carbon_black-500">Yakin hapus member ini? Status WA & promo juga akan hilang.</p>
+      </Modal>
+
+      <Modal
+        open={Boolean(confirm)}
+        onClose={() => setConfirm(null)}
+        title={confirm?.title ?? 'Konfirmasi'}
+        footer={
+          <div className="flex gap-2">
+            <button
+              className="interactive-btn rounded-lg border border-silver-700 px-4 py-2 text-sm font-semibold text-carbon_black-500 hover:bg-silver-800"
+              onClick={() => setConfirm(null)}
+            >
+              Batal
+            </button>
+            <button
+              className="interactive-btn rounded-lg bg-strawberry_red-500 px-4 py-2 text-sm font-semibold text-white hover:bg-strawberry_red-400"
+              onClick={runAndClose}
+            >
+              Ya, lanjut
+            </button>
+          </div>
+        }
+      >
+        <p className="text-sm text-carbon_black-500">{confirm?.message}</p>
       </Modal>
     </div>
   )

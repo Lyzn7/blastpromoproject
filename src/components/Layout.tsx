@@ -13,6 +13,7 @@ const mainSection: NavSection = {
   items: [
     { label: 'Dashboard', to: '/dashboard', icon: '🏠' },
     { label: 'Member', to: '/member', icon: '👥' },
+    { label: 'Log', to: '/log', icon: '⏱️' },
   ],
 }
 
@@ -25,6 +26,7 @@ const storeSection: NavSection = {
       children: [
         { label: 'Member', to: '/toko-a/member', icon: '👥' },
         { label: 'Ultah Member', to: '/toko-a/ultah-member', icon: '🎂' },
+        { label: 'Blasting Promo', to: '/toko-a/blasting', icon: '📣' },
       ],
     },
     {
@@ -33,6 +35,7 @@ const storeSection: NavSection = {
       children: [
         { label: 'Member', to: '/toko-b/member', icon: '👥' },
         { label: 'Ultah Member', to: '/toko-b/ultah-member', icon: '🎂' },
+        { label: 'Blasting Promo', to: '/toko-b/blasting', icon: '📣' },
       ],
     },
     {
@@ -41,6 +44,7 @@ const storeSection: NavSection = {
       children: [
         { label: 'Member', to: '/toko-c/member', icon: '👥' },
         { label: 'Ultah Member', to: '/toko-c/ultah-member', icon: '🎂' },
+        { label: 'Blasting Promo', to: '/toko-c/blasting', icon: '📣' },
       ],
     },
   ],
