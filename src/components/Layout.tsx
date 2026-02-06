@@ -1,16 +1,16 @@
-import { useEffect, useMemo, useState } from 'react'
+﻿/*  */import { useEffect, useMemo, useState } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
-type NavItem = { label: string; to?: string; icon: string; children?: NavItem[]; store?: 'A' | 'B' | 'C' }
+type NavItem = { label: string; to?: string; icon: string; iconType?: 'img' | 'emoji'; children?: NavItem[]; store?: 'A' | 'B' | 'C' }
 type NavSection = { title: string; items: NavItem[] }
 
 const mainSection: NavSection = {
   title: 'MENU UTAMA',
   items: [
-    { label: 'Dashboard', to: '/dashboard', icon: '🏠' },
-    { label: 'Member', to: '/member', icon: '👥' },
-    { label: 'Log', to: '/log', icon: '⏱️' },
+    { label: 'Dashboard', to: '/dashboard', icon: '/icons/home.png', iconType: 'img' },
+    { label: 'Member', to: '/member', icon: '/icons/users.png', iconType: 'img' },
+    { label: 'Log', to: '/log', icon: '/icons/clock.png', iconType: 'img' },
   ],
 }
 
@@ -20,31 +20,34 @@ const storeSection: NavSection = {
     {
       label: 'Toko A',
       store: 'A',
-      icon: '🛍️',
+      icon: '/icons/bag.png',
+      iconType: 'img',
       children: [
-        { label: 'Member', to: '/toko-a/member', icon: '👥' },
-        { label: 'Ultah Member', to: '/toko-a/ultah-member', icon: '🎂' },
-        { label: 'Blasting Promo', to: '/toko-a/blasting', icon: '📣' },
+        { label: 'Member', to: '/toko-a/member', icon: '/icons/users.png', iconType: 'img' },
+        { label: 'Ultah Member', to: '/toko-a/ultah-member', icon: '/icons/cake.png', iconType: 'img' },
+        { label: 'Blasting Promo', to: '/toko-a/blasting', icon: '/icons/megaphone.png', iconType: 'img' },
       ],
     },
     {
       label: 'Toko B',
       store: 'B',
-      icon: '🛍️',
+      icon: '/icons/bag.png',
+      iconType: 'img',
       children: [
-        { label: 'Member', to: '/toko-b/member', icon: '👥' },
-        { label: 'Ultah Member', to: '/toko-b/ultah-member', icon: '🎂' },
-        { label: 'Blasting Promo', to: '/toko-b/blasting', icon: '📣' },
+        { label: 'Member', to: '/toko-b/member', icon: '/icons/users.png', iconType: 'img' },
+        { label: 'Ultah Member', to: '/toko-b/ultah-member', icon: '/icons/cake.png', iconType: 'img' },
+        { label: 'Blasting Promo', to: '/toko-b/blasting', icon: '/icons/megaphone.png', iconType: 'img' },
       ],
     },
     {
       label: 'Toko C',
       store: 'C',
-      icon: '🛍️',
+      icon: '/icons/bag.png',
+      iconType: 'img',
       children: [
-        { label: 'Member', to: '/toko-c/member', icon: '👥' },
-        { label: 'Ultah Member', to: '/toko-c/ultah-member', icon: '🎂' },
-        { label: 'Blasting Promo', to: '/toko-c/blasting', icon: '📣' },
+        { label: 'Member', to: '/toko-c/member', icon: '/icons/users.png', iconType: 'img' },
+        { label: 'Ultah Member', to: '/toko-c/ultah-member', icon: '/icons/cake.png', iconType: 'img' },
+        { label: 'Blasting Promo', to: '/toko-c/blasting', icon: '/icons/megaphone.png', iconType: 'img' },
       ],
     },
   ],
@@ -105,62 +108,101 @@ export default function Layout() {
   const topbarLeft = isDesktop && open ? `${sidebarWidth}px` : '0px'
   const contentMargin = isDesktop && open ? `${sidebarWidth}px` : '0px'
 
+  const renderIconVisual = (icon: string, iconType?: 'img' | 'emoji', isActive = false) =>
+    iconType === 'img' ? (
+      <img
+        src={icon}
+        alt=""
+        className="h-5 w-5 transition"
+        style={{
+          filter: isActive
+            ? 'brightness(0) saturate(0) invert(27%) sepia(6%) saturate(274%) hue-rotate(156deg) brightness(92%) contrast(88%)'
+            : 'drop-shadow(0 0 2px rgba(0,0,0,0.25))',
+        }}
+      />
+    ) : (
+      <span className="text-base">{icon}</span>
+    )
+
   const renderItem = (item: NavItem, level = 0) => (
     <NavLink
       key={item.to}
       to={item.to!}
       className={({ isActive }) =>
-        `interactive-nav flex items-center gap-3 rounded-lg ${level === 0 ? 'px-3' : 'px-5'} py-2 text-sm font-medium transition ${
+        `interactive-nav group relative flex h-[52px] items-center gap-3 rounded-xl ${level === 0 ? 'pl-4 pr-3' : 'pl-6 pr-3'} text-sm font-medium transition active:scale-[0.99] ${
           isActive
-            ? 'bg-white_smoke-900 text-carbon_black-500 shadow-sm shadow-silver-400/40'
-            : 'text-white_smoke-900 hover:bg-carbon_black-400/60'
+            ? 'bg-white text-carbon_black-700 shadow-sm shadow-silver-400/40'
+            : 'text-white hover:bg-white hover:text-carbon_black-700'
         }`
       }
       onClick={() => {
         if (!isDesktop) setOpen(false)
       }}
     >
-      <span className="text-base">{item.icon}</span>
-      {item.label}
+          {({ isActive }) => (
+            <>
+              <span
+                className={`absolute left-0 top-1.5 h-[calc(100%-12px)] w-[6px] rounded-r-full transition ${
+                  isActive ? 'bg-strawberry_red-500' : 'bg-transparent group-hover:bg-strawberry_red-300/80'
+                }`}
+                aria-hidden
+              />
+              {renderIconVisual(item.icon, item.iconType, isActive)}
+              <span className="tracking-wide">{item.label}</span>
+            </>
+          )}
     </NavLink>
   )
 
   return (
-    <div className="min-h-screen bg-white_smoke-800 text-carbon_black-500">
+    <div className="min-h-screen bg-white_smoke-900 text-carbon_black-500">
       <aside
-        className={`fixed left-0 top-0 z-40 h-screen w-[260px] transform border-r border-silver-700 bg-gradient-to-b from-dark_garnet-500 via-carbon_black-500 to-carbon_black-600 text-white_smoke-900 shadow-lg shadow-dark_garnet-900/30 transition-transform duration-200 ${sidebarClass}`}
-      >
-        <div className="flex flex-col items-center gap-2 px-5 py-6 text-center">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white_smoke-900 text-strawberry_red-500 text-2xl font-black">
-            📚
-          </div>
+  className={`fixed left-0 top-0 z-40 h-screen w-[260px] transform
+  border-r border-white/20
+  bg-gradient-to-b from-[#D02752] via-[#F63049] to-[#FF4B4B]
+  shadow-lg shadow-red-300/40
+  transition-transform duration-200 ${sidebarClass}`}
+>
+
+        <div className="flex flex-col items-center gap-3 px-5 py-7 text-center">
+          
           <div className="space-y-1">
-            <div className="text-sm font-semibold">DM Grosir</div>
-            <div className="text-[11px] text-white_smoke-700/90">{user?.name ?? 'User'}</div>
+            <div className="text-xl font-semibold text-carbon_black-500">DM Grosir</div>
+            <div className="inline-flex items-center gap-2">
+              <span className="text-sm font-medium text-white-600">{user?.name ?? 'User'}</span>
+              
+            </div>
           </div>
         </div>
-        <nav className="mt-2 space-y-4 px-3 pb-6">
+        <nav className="mt-2 space-y-5 px-3 pb-6">
           {[mainSection, { ...storeSection, items: filteredStoreItems }].map((section) => {
             if (section.title === 'MENU TOKO' && section.items.length === 0) return null
             return (
               <div key={section.title} className="space-y-2">
-                <p className="px-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-white_smoke-700/70">
+                <p className="px-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-silver-600">
                   {section.title}
                 </p>
-                <div className="space-y-1">
+                <div className="space-y-1.5">
                   {section.items.map((item) =>
                     item.children ? (
                       <div key={item.label} className="space-y-1">
                         <button
-                          className="interactive-nav flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-semibold text-white_smoke-900 transition hover:bg-carbon_black-400/60"
+                          className="interactive-nav group flex h-12 w-full items-center justify-between rounded-lg bg-white/70 px-4 py-3 text-sm font-semibold text-carbon_black-600 shadow-sm shadow-silver-500/20 transition hover:bg-white active:scale-[0.99]"
                           type="button"
                           onClick={() => setOpenSection((prev) => ({ ...prev, [item.label]: !prev[item.label] }))}
                         >
                           <span className="flex items-center gap-2">
-                            <span className="text-base">{item.icon}</span>
+                            {renderIconVisual(item.icon, item.iconType, false)}
                             {item.label}
                           </span>
-                          <span className={`transition-transform ${openSection[item.label] ? 'rotate-90' : ''}`}>›</span>
+                          <svg
+                            className={`h-3 w-3 transition-transform ${openSection[item.label] ? 'rotate-90' : ''}`}
+                            viewBox="0 0 16 16"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path d="M6 3.5 10.5 8 6 12.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                          </svg>
                         </button>
                         <div
                           className={`${
@@ -175,6 +217,7 @@ export default function Layout() {
                     ),
                   )}
                 </div>
+                <div className="border-b border-silver-700/40 pt-3" />
               </div>
             )
           })}

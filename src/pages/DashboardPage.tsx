@@ -1,16 +1,64 @@
-import { useMemo, useState } from 'react'
+﻿import { useMemo, useState } from 'react'
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { useAppContext } from '../context/AppContext'
 import { useAuth } from '../context/AuthContext'
 
-function Card({ title, value, subtle, icon }: { title: string; value: string | number; subtle?: string; icon: string }) {
+function Card({
+  title,
+  value,
+  subtle,
+  icon,
+  tone,
+  gradient,
+  shadow,
+}: {
+  title: string
+  value: string | number
+  subtle?: string
+  icon: string
+  tone?: number
+  gradient?: string
+  shadow?: string
+}) {
+  const gradients = [
+    'linear-gradient(135deg, #ff512f 0%, #f09819 100%)', // fiery orange
+    'linear-gradient(135deg, #36d1dc 0%, #5b86e5 100%)', // cyan-blue
+    'linear-gradient(135deg, #7f00ff 0%, #e100ff 100%)', // purple-fuchsia
+    'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)', // jade-green
+    'linear-gradient(135deg, #fc466b 0%, #3f5efb 100%)', // magenta-blue
+    'linear-gradient(135deg, #f7971e 0%, #ffd200 100%)', // amber
+  ]
+  const glowShadows = [
+    '0 14px 30px rgba(240, 120, 44, 0.35)',
+    '0 14px 30px rgba(75, 144, 225, 0.35)',
+    '0 14px 30px rgba(166, 85, 255, 0.35)',
+    '0 14px 30px rgba(44, 190, 131, 0.35)',
+    '0 14px 30px rgba(105, 115, 255, 0.35)',
+    '0 14px 30px rgba(247, 173, 30, 0.35)',
+  ]
+
+  const gradientIndex =
+    tone !== undefined ? tone % gradients.length : Math.abs((title.length + (icon.codePointAt(0) ?? 0)) % gradients.length)
+  const iconStyle = {
+    backgroundImage: gradient || gradients[gradientIndex],
+    boxShadow: `${shadow || glowShadows[gradientIndex]}, 0 10px 22px rgba(0, 0, 0, 0.18)`,
+    border: '1px solid rgba(255,255,255,0.25)',
+    color: '#ffffff',
+  }
+
   return (
-    <div className="interactive-card flex items-start gap-4 rounded-2xl border border-silver-700 bg-white_smoke-900 p-4 shadow-md shadow-silver-400/30">
-      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-strawberry_red-500/10 text-2xl">{icon}</div>
+    <div className="interactive-card flex items-start gap-4 rounded-2xl border border-silver-700 bg-white_smoke-900 p-4 shadow-md shadow-silver-400/40">
+      <div
+        className="flex h-12 w-12 items-center justify-center rounded-xl text-2xl"
+        style={iconStyle}
+        aria-hidden
+      >
+        {icon}
+      </div>
       <div>
-        <p className="text-xs uppercase tracking-[0.2em] text-silver-600">{title}</p>
+        <p className="text-xs uppercase tracking-[0.2em] text-carbon_black-700">{title}</p>
         <div className="mt-1 text-3xl font-semibold text-carbon_black-500">{value}</div>
-        {subtle ? <p className="mt-1 text-xs text-silver-600">{subtle}</p> : null}
+        {subtle ? <p className="mt-1 text-xs text-carbon_black-700">{subtle}</p> : null}
       </div>
     </div>
   )
@@ -115,11 +163,48 @@ export default function DashboardPage() {
       </div>
 
       <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <Card title="Member Aktif Total" value={filteredActiveTotal} subtle="Sesuai akses" icon="👥" />
-        {allowedStores.includes('A') ? <Card title="Member Toko A" value={filteredCountByStore.A} icon="🏪" /> : null}
-        {allowedStores.includes('B') ? <Card title="Member Toko B" value={filteredCountByStore.B} icon="🏪" /> : null}
-        {allowedStores.includes('C') ? <Card title="Member Toko C" value={filteredCountByStore.C} icon="🏪" /> : null}
-        <Card title="Pesan Terkirim Total" value={filteredMessagesTotal} icon="✉️" />
+        <Card
+          title="Member Aktif Total"
+          value={filteredActiveTotal}
+          subtle="Sesuai akses"
+          icon="👥"
+          gradient="linear-gradient(135deg, #36d1dc 0%, #5b86e5 100%)"
+          shadow="0 14px 30px rgba(75, 144, 225, 0.35)"
+        />
+        {allowedStores.includes('A') ? (
+          <Card
+            title="Member Toko A"
+            value={filteredCountByStore.A}
+            icon="🏪"
+            gradient="linear-gradient(135deg, #f7971e 0%, #ffd200 100%)"
+            shadow="0 14px 30px rgba(247, 173, 30, 0.35)"
+          />
+        ) : null}
+        {allowedStores.includes('B') ? (
+          <Card
+            title="Member Toko B"
+            value={filteredCountByStore.B}
+            icon="🏪"
+            gradient="linear-gradient(135deg, #11998e 0%, #38ef7d 100%)"
+            shadow="0 14px 30px rgba(44, 190, 131, 0.35)"
+          />
+        ) : null}
+        {allowedStores.includes('C') ? (
+          <Card
+            title="Member Toko C"
+            value={filteredCountByStore.C}
+            icon="🏪"
+            gradient="linear-gradient(135deg, #ff5f6d 0%, #ffc3a0 100%)"
+            shadow="0 14px 30px rgba(255, 111, 150, 0.35)"
+          />
+        ) : null}
+        <Card
+          title="Pesan Terkirim Total"
+          value={filteredMessagesTotal}
+          icon="✉️"
+          gradient="linear-gradient(135deg, #7f00ff 0%, #e100ff 100%)"
+          shadow="0 14px 30px rgba(166, 85, 255, 0.35)"
+        />
       </section>
 
       <section className="grid gap-6 lg:grid-cols-[2fr_1fr]">
